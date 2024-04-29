@@ -11,7 +11,8 @@ RUN rpm-ostree install cosmic-desktop
 
 # Install extras
 RUN rpm-ostree install \
-    gnome-keyring
+    gnome-keyring \
+    power-profiles-daemon
 
 RUN ostree container commit
 
