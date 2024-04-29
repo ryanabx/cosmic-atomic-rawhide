@@ -88,7 +88,7 @@ jobs:
         with:
           containerfiles: |
             Containerfile
-          image: cosmic-${{ matrix.flavor }}
+          image: cosmic-rawhide-${{ matrix.flavor }}
           tags: |
             ${{ steps.generate-tags.outputs.alias_tags }}
           archs: ${{ matrix.arch }}
