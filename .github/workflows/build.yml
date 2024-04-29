@@ -69,7 +69,7 @@ jobs:
             org.opencontainers.image.title=cosmic-${{ matrix.flavor }}
             org.opencontainers.image.version=${{ matrix.version }}
             org.opencontainers.image.description=${{ env.description }}
-            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/ublue-os/cosmic/main/README.md
+            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/ryanabx/cosmic/main/README.md
             io.artifacthub.package.logo-url=https://avatars.githubusercontent.com/u/120078124?s=200&v=4
 
       - name: Install qemu dependency
@@ -77,16 +77,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
      
-      # Create Variables. Use UBlue images for amd64, fedora-ostree desktop for arm64
       - name: matrix-variables
         run: |
-          if [[ ${{ matrix.arch }} = "amd64" && ${{ matrix.version }} != "rawhide" ]]; then
-            echo "SOURCE_ORG=ghcr.io/ublue-os" >> $GITHUB_ENV
-            echo "SOURCE_IMAGE=${{ matrix.flavor }}-main" >> $GITHUB_ENV
-          else
-            echo "SOURCE_ORG=quay.io/fedora-ostree-desktops" >> $GITHUB_ENV
-            echo "SOURCE_IMAGE=${{ matrix.flavor }}" >> $GITHUB_ENV
-          fi
+          echo "SOURCE_ORG=quay.io/fedora-ostree-desktops" >> $GITHUB_ENV
+          echo "SOURCE_IMAGE=${{ matrix.flavor }}" >> $GITHUB_ENV
 
       # Build image using Buildah action
       - name: Build Image
@@ -112,6 +106,22 @@ jobs:
         uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ env.IMAGE_REGISTRY }}
+      
+      - name: Push To GHCR
+        uses: redhat-actions/push-to-registry@v2
+        id: push
+        if: github.event_name != 'pull_request'
+        env:
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ github.token }}
+        with:
+          image: ${{ steps.build_image.outputs.image }}
+          tags: ${{ steps.build_image.outputs.tags }}
+          registry: ${{ steps.registry_case.outputs.lowercase }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          extra-args: |
+            --disable-content-trust
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -120,13 +130,3 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      # Push the image to GHCR (Image Registry)
-      - name: Push To GHCR
-        uses: redhat-actions/push-to-registry@v2
-        if: github.event_name != 'pull_request'
-        id: push
-        with:
-          registry: ${{ steps.registry_case.outputs.lowercase }}
-          image: ${{ steps.build_image.outputs.image }}
-          tags: ${{ steps.build_image.outputs.tags }}
