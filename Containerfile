@@ -5,9 +5,11 @@ FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}
 
 # Setup Copr repo
 RUN wget https://copr.fedorainfracloud.org/coprs/ryanabx/cosmic-epoch/repo/fedora-40/ryanabx-cosmic-epoch-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_ryanabx-cosmic.repo
+RUN wget https://copr.fedorainfracloud.org/coprs/ryanabx/cosmic-extras/repo/fedora-40/ryanabx-cosmic-extras-fedora-$(rpm -E %fedora).repo -O /etc/yum.repos.d/_copr_ryanabx-cosmic-extras.repo
 
 # Install cosmic desktop environment
 RUN rpm-ostree install cosmic-desktop
+RUN rpm-ostree install cosmic-bg-theme
 
 # Install extras
 RUN rpm-ostree install \
