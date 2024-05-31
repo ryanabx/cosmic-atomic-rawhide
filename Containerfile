@@ -19,4 +19,3 @@ RUN rpm-ostree install \
 RUN ostree container commit
 
 RUN systemctl enable cosmic-greeter
-RUN systemctl enable cosmic-bg-theme
